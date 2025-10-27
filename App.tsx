@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { WalletProvider } from './context/WalletContext';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -13,6 +14,7 @@ import UploadDocument from './pages/doctor/UploadDocument';
 import AuditLog from './pages/admin/AuditLog';
 import VerifyDocument from './pages/patient/VerifyDocument';
 import ManageUsers from './pages/admin/ManageUsers';
+import CreatePatient from './pages/doctor/CreatePatient';
 import { UserRole } from './types';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: UserRole[] }> = ({ children, allowedRoles }) => {
@@ -25,7 +27,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: UserRo
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <MainRouter />
+      <WalletProvider>
+        <MainRouter />
+      </WalletProvider>
     </AuthProvider>
   );
 };
@@ -48,6 +52,7 @@ const MainRouter: React.FC = () => {
           {/* Doctor Routes */}
           <Route path="doctor-dashboard" element={<ProtectedRoute allowedRoles={[UserRole.Doctor]}><DoctorDashboard /></ProtectedRoute>} />
           <Route path="upload" element={<ProtectedRoute allowedRoles={[UserRole.Doctor]}><UploadDocument /></ProtectedRoute>} />
+          <Route path="create-patient" element={<ProtectedRoute allowedRoles={[UserRole.Doctor]}><CreatePatient /></ProtectedRoute>} />
 
           {/* Patient Routes */}
           <Route path="patient-dashboard" element={<ProtectedRoute allowedRoles={[UserRole.Patient]}><PatientDashboard /></ProtectedRoute>} />

@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useWallet } from '../../hooks/useWallet';
 
 const ActionCard: React.FC<{ to: string, title: string, description: string, color: string }> = ({ to, title, description, color }) => (
     <Link to={to} className="group p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 block">
@@ -11,6 +13,24 @@ const ActionCard: React.FC<{ to: string, title: string, description: string, col
     </Link>
 );
 
+const WalletConnectCard: React.FC = () => {
+    const { isConnected, address, connectWallet, disconnectWallet } = useWallet();
+
+    return (
+        <div className="p-6 bg-white rounded-2xl shadow-lg flex flex-col justify-between">
+             <div>
+                <h4 className={`text-xl font-bold text-gray-700`}>{isConnected ? 'Wallet Connected' : 'Connect Wallet'}</h4>
+                <p className="mt-2 text-[#4B5563] h-10">{isConnected ? `Address: ${address?.substring(0, 6)}...${address?.substring(address.length - 4)}` : 'Connect your Thirdweb wallet for blockchain interactions.'}</p>
+             </div>
+             <button
+                onClick={isConnected ? disconnectWallet : connectWallet}
+                className={`mt-4 w-full text-sm font-medium py-2 px-4 rounded-lg transition-colors ${isConnected ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-800 hover:bg-black text-white'}`}
+             >
+                {isConnected ? 'Disconnect Wallet' : 'Connect Thirdweb Wallet'}
+             </button>
+        </div>
+    )
+}
 
 const DoctorDashboard: React.FC = () => {
     return (
@@ -35,6 +55,13 @@ const DoctorDashboard: React.FC = () => {
                     description="Summarize complex reports or get insights from medical data using our Gemini-powered AI."
                     color="text-indigo-600"
                 />
+                 <ActionCard 
+                    to="/create-patient"
+                    title="Create New Patient"
+                    description="Onboard a new patient to the Docu-Rex system and create their secure digital record."
+                    color="text-orange-500"
+                />
+                <WalletConnectCard />
             </div>
             <div className="mt-8 bg-white p-8 rounded-2xl shadow-lg">
                 <h4 className="text-xl font-bold text-[#111827]">Recent Activity</h4>
