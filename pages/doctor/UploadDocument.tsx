@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { uploadDocument, getPatients } from '../../services/mockApi';
 import { User } from '../../types';
+import { useWallet } from '../../hooks/useWallet';
 
 const UploadDocument: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -10,6 +12,7 @@ const UploadDocument: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState('');
     const { user } = useAuth();
+    const { addTransaction } = useWallet();
 
     useEffect(() => {
         getPatients().then(setPatients);
@@ -33,6 +36,9 @@ const UploadDocument: React.FC = () => {
         try {
             const uploadedDoc = await uploadDocument(file, user, patientId);
             setMessage(`Successfully uploaded "${uploadedDoc.name}". Document hash: ${uploadedDoc.hash.substring(0, 12)}...`);
+            
+            addTransaction(`Uploaded: ${uploadedDoc.name}`);
+
             setFile(null);
             setPatientId('');
             // Reset file input

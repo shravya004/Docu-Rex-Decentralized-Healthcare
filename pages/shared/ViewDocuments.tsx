@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { getDocumentsForUser, verifyDocumentById, getBlockchainEntries } from '../../services/mockApi';
 import { Document, UserRole, BlockchainEntry } from '../../types';
+import { useWallet } from '../../hooks/useWallet';
 
 type DocumentWithStatus = Document & { status: 'Verified' | 'Pending' };
 
@@ -47,6 +49,7 @@ const DocumentCard: React.FC<{ doc: DocumentWithStatus; onVerify: (id: string) =
 
 const ViewDocuments: React.FC = () => {
     const { user } = useAuth();
+    const { addTransaction } = useWallet();
     const [documents, setDocuments] = useState<Document[]>([]);
     const [blockchain, setBlockchain] = useState<BlockchainEntry[]>([]);
     const [loading, setLoading] = useState(true);
@@ -75,6 +78,10 @@ const ViewDocuments: React.FC = () => {
         const success = await verifyDocumentById(docId, user);
         if (success) {
             setMessage('Document verified successfully!');
+            const doc = documents.find(d => d.id === docId);
+            if (doc) {
+                addTransaction(`Verified: ${doc.name}`);
+            }
             // Refresh data to show new status
             fetchDocuments();
         } else {

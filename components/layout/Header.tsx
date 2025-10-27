@@ -1,9 +1,42 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useWallet } from '../../hooks/useWallet';
+import { Transaction } from '../../context/WalletContext';
+
+const timeSince = (date: Date): string => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return Math.floor(seconds) + " seconds ago";
+};
+
+const StatusIcon: React.FC<{ status: Transaction['status'] }> = ({ status }) => {
+    switch (status) {
+        case 'Confirmed':
+            return <div className="w-2.5 h-2.5 bg-green-500 rounded-full" title="Confirmed"></div>;
+        case 'Pending':
+            return <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse" title="Pending"></div>;
+        case 'Failed':
+            return <div className="w-2.5 h-2.5 bg-red-500 rounded-full" title="Failed"></div>;
+        default:
+            return null;
+    }
+};
 
 const Header: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
+  const { transactions } = useWallet();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-[#D1D5DB] sticky top-0 z-10">
@@ -36,6 +69,39 @@ const Header: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSidebar }) 
             <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
           
+          <div className="relative ml-2">
+            <button onClick={() => setHistoryOpen(!historyOpen)} className="relative p-2 text-gray-500 hover:text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              {transactions.some(tx => tx.status === 'Pending') && 
+                <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-yellow-400 ring-2 ring-white"></span>
+              }
+            </button>
+            {historyOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl z-20 overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                    <h4 className="font-bold text-gray-800">Transaction History</h4>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                    {transactions.length > 0 ? (
+                        transactions.map(tx => (
+                            <div key={tx.id} className="p-4 border-b border-gray-100 hover:bg-gray-50 flex items-start space-x-3">
+                                <div className="flex-shrink-0 pt-1.5">
+                                    <StatusIcon status={tx.status} />
+                                </div>
+                                <div className="flex-grow">
+                                    <p className="text-sm text-gray-800">{tx.description}</p>
+                                    <p className="text-xs text-gray-400">{timeSince(tx.timestamp)}</p>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="p-4 text-sm text-center text-gray-500">No transactions yet.</p>
+                    )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="relative ml-4">
             <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center focus:outline-none">
                 <div className="w-10 h-10 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold">
