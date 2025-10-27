@@ -16,6 +16,21 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     return <span className={`${baseClasses} ${colorClasses}`}>{status}</span>;
 };
 
+const StorageLocationInfo: React.FC<{ location: Document['storageLocation'] }> = ({ location }) => {
+    const storage = location || 'On-Premises'; // Default for old data
+    const isCloud = storage === 'Cloud';
+    const icon = isCloud ? (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+    ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
+    );
+    return (
+        <div className="flex items-center space-x-2">
+            {icon}
+            <span className="text-xs text-gray-500">{storage}</span>
+        </div>
+    );
+}
 
 const DocumentCard: React.FC<{ doc: DocumentWithStatus; onVerify: (id: string) => void; isAdmin: boolean }> = ({ doc, onVerify, isAdmin }) => {
     return (
@@ -28,8 +43,11 @@ const DocumentCard: React.FC<{ doc: DocumentWithStatus; onVerify: (id: string) =
                     <StatusBadge status={doc.status} />
                 </div>
                 <h4 className="font-bold text-[#111827] truncate mb-1">{doc.name}</h4>
-                <p className="text-xs text-[#4B5563]">Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}</p>
-                <p className="text-xs text-[#4B5563]">Size: {(doc.size / 1024).toFixed(2)} KB</p>
+                <div className="space-y-1 text-xs text-[#4B5563]">
+                    <p>Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}</p>
+                    <p>Size: {(doc.size / 1024).toFixed(2)} KB</p>
+                    <StorageLocationInfo location={doc.storageLocation} />
+                </div>
                 <p className="text-xs text-gray-500 font-mono mt-3 break-all bg-gray-50 p-2 rounded">Hash: {doc.hash.substring(0, 20)}...</p>
             </div>
             <div className="mt-4">

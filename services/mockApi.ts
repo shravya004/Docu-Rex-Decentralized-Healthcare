@@ -110,7 +110,7 @@ export const getBlockchainEntries = (): Promise<BlockchainEntry[]> => {
     });
 };
 
-export const uploadDocument = async (file: File, uploader: User, patientId: string): Promise<Document> => {
+export const uploadDocument = async (file: File, uploader: User, patientId: string, storageLocation: 'On-Premises' | 'Cloud'): Promise<Document> => {
     const fileContent = await file.text();
     const hash = await simpleHash(file.name + file.size + fileContent);
     
@@ -123,6 +123,7 @@ export const uploadDocument = async (file: File, uploader: User, patientId: stri
         uploaderId: uploader.id,
         patientId,
         hash,
+        storageLocation,
     };
 
     const newBlockchainEntry: BlockchainEntry = {
@@ -138,7 +139,7 @@ export const uploadDocument = async (file: File, uploader: User, patientId: stri
     saveToLocalStorage('docurex_documents', documents);
     saveToLocalStorage('docurex_blockchain', blockchain);
     
-    createAuditLog(uploader, 'Document Upload', `Uploaded '${file.name}' for patient ID ${patientId}. Hash: ${hash.substring(0,8)}...`);
+    createAuditLog(uploader, 'Document Upload', `Uploaded '${file.name}' for patient ID ${patientId} to ${storageLocation}. Hash: ${hash.substring(0,8)}...`);
 
     return newDocument;
 };

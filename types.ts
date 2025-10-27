@@ -23,6 +23,7 @@ export interface Document {
   uploaderId: string;
   patientId: string;
   hash: string;
+  storageLocation: 'On-Premises' | 'Cloud';
 }
 
 export interface BlockchainEntry {

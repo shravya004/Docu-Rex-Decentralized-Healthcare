@@ -9,6 +9,7 @@ const UploadDocument: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [patientId, setPatientId] = useState('');
     const [patients, setPatients] = useState<User[]>([]);
+    const [storageLocation, setStorageLocation] = useState<'On-Premises' | 'Cloud'>('On-Premises');
     const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState('');
     const { user } = useAuth();
@@ -34,13 +35,14 @@ const UploadDocument: React.FC = () => {
         setIsUploading(true);
         setMessage('');
         try {
-            const uploadedDoc = await uploadDocument(file, user, patientId);
-            setMessage(`Successfully uploaded "${uploadedDoc.name}". Document hash: ${uploadedDoc.hash.substring(0, 12)}...`);
+            const uploadedDoc = await uploadDocument(file, user, patientId, storageLocation);
+            setMessage(`Successfully uploaded "${uploadedDoc.name}" to ${storageLocation}. Document hash: ${uploadedDoc.hash.substring(0, 12)}...`);
             
             addTransaction(`Uploaded: ${uploadedDoc.name}`);
 
             setFile(null);
             setPatientId('');
+            setStorageLocation('On-Premises');
             // Reset file input
             const fileInput = document.getElementById('file-upload') as HTMLInputElement;
             if(fileInput) fileInput.value = '';
@@ -91,6 +93,31 @@ const UploadDocument: React.FC = () => {
                     </div>
                     {file && <p className="mt-2 text-sm text-gray-500">Selected: {file.name}</p>}
                 </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-[#4B5563]">Storage Option</label>
+                    <fieldset className="mt-2">
+                        <legend className="sr-only">Storage location</legend>
+                        <div className="space-y-2">
+                            <label className={`relative flex items-center p-3 border rounded-lg cursor-pointer ${storageLocation === 'On-Premises' ? 'bg-blue-50 border-blue-300' : 'border-gray-300'}`}>
+                                <input type="radio" name="storage-location" value="On-Premises" checked={storageLocation === 'On-Premises'} onChange={() => setStorageLocation('On-Premises')} className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                                <span className="ml-3 flex flex-col">
+                                    <span className="text-sm font-medium text-gray-900">On-Premises Server</span>
+                                    <span className="text-xs text-gray-500">Recommended for highly sensitive new records.</span>
+                                </span>
+                            </label>
+                             <label className={`relative flex items-center p-3 border rounded-lg cursor-pointer ${storageLocation === 'Cloud' ? 'bg-blue-50 border-blue-300' : 'border-gray-300'}`}>
+                                <input type="radio" name="storage-location" value="Cloud" checked={storageLocation === 'Cloud'} onChange={() => setStorageLocation('Cloud')} className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                                <span className="ml-3 flex flex-col">
+                                    <span className="text-sm font-medium text-gray-900">Cloud Archive</span>
+                                    <span className="text-xs text-gray-500">Cost-effective for long-term storage of non-critical files.</span>
+                                </span>
+                            </label>
+                        </div>
+                    </fieldset>
+                </div>
+
+
                 <button
                     type="submit"
                     disabled={isUploading || !file || !patientId}
