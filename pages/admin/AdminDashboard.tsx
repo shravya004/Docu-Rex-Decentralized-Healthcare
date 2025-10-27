@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getAllUsers } from '../../services/mockApi';
 
 const AdminDashboard: React.FC = () => {
-    // In a real app, these would come from an API
+    const [userCount, setUserCount] = useState(0);
+
+    useEffect(() => {
+        getAllUsers().then(users => {
+            setUserCount(users.length);
+        });
+    }, []);
+
     const stats = [
-        { name: 'Total Users', value: '3', icon: 'users', color: 'text-blue-500' },
+        { name: 'Total Users', value: userCount.toString(), icon: 'users', color: 'text-blue-500' },
         { name: 'Documents Stored', value: '15', icon: 'docs', color: 'text-green-500' },
         { name: 'Pending Verifications', value: '2', icon: 'pending', color: 'text-yellow-500' },
         { name: 'Audit Log Events', value: '42', icon: 'audit', color: 'text-red-500' },

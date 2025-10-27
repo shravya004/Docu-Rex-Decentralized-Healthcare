@@ -3,6 +3,8 @@ export enum UserRole {
   Admin = 'Admin',
   Doctor = 'Doctor',
   Patient = 'Patient',
+  Researcher = 'Researcher',
+  Auditor = 'Auditor',
 }
 
 export interface User {

@@ -12,6 +12,15 @@ import ViewDocuments from './pages/shared/ViewDocuments';
 import UploadDocument from './pages/doctor/UploadDocument';
 import AuditLog from './pages/admin/AuditLog';
 import VerifyDocument from './pages/patient/VerifyDocument';
+import ManageUsers from './pages/admin/ManageUsers';
+import { UserRole } from './types';
+
+const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles: UserRole[] }> = ({ children, allowedRoles }) => {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
+  if (!allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
 
 const App: React.FC = () => {
   return (
@@ -30,14 +39,23 @@ const MainRouter: React.FC = () => {
         <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/" element={user ? <DashboardLayout /> : <Navigate to="/login" />}>
           <Route index element={<DashboardRedirect />} />
-          <Route path="admin-dashboard" element={<AdminDashboard />} />
-          <Route path="doctor-dashboard" element={<DoctorDashboard />} />
-          <Route path="patient-dashboard" element={<PatientDashboard />} />
+          
+          {/* Admin Routes */}
+          <Route path="admin-dashboard" element={<ProtectedRoute allowedRoles={[UserRole.Admin]}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="audit-log" element={<ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Auditor]}><AuditLog /></ProtectedRoute>} />
+          <Route path="manage-users" element={<ProtectedRoute allowedRoles={[UserRole.Admin]}><ManageUsers /></ProtectedRoute>} />
+
+          {/* Doctor Routes */}
+          <Route path="doctor-dashboard" element={<ProtectedRoute allowedRoles={[UserRole.Doctor]}><DoctorDashboard /></ProtectedRoute>} />
+          <Route path="upload" element={<ProtectedRoute allowedRoles={[UserRole.Doctor]}><UploadDocument /></ProtectedRoute>} />
+
+          {/* Patient Routes */}
+          <Route path="patient-dashboard" element={<ProtectedRoute allowedRoles={[UserRole.Patient]}><PatientDashboard /></ProtectedRoute>} />
+          <Route path="verify" element={<ProtectedRoute allowedRoles={[UserRole.Patient]}><VerifyDocument /></ProtectedRoute>} />
+
+          {/* Shared Routes */}
           <Route path="documents" element={<ViewDocuments />} />
-          <Route path="upload" element={<UploadDocument />} />
-          <Route path="verify" element={<VerifyDocument />} />
           <Route path="ai-assistant" element={<AiAssistant />} />
-          <Route path="audit-log" element={<AuditLog />} />
         </Route>
       </Routes>
     </HashRouter>
@@ -49,12 +67,15 @@ const DashboardRedirect: React.FC = () => {
     if (!user) return <Navigate to="/login" />;
 
     switch (user.role) {
-        case 'Admin':
+        case UserRole.Admin:
             return <Navigate to="/admin-dashboard" />;
-        case 'Doctor':
+        case UserRole.Doctor:
             return <Navigate to="/doctor-dashboard" />;
-        case 'Patient':
+        case UserRole.Patient:
             return <Navigate to="/patient-dashboard" />;
+        case UserRole.Researcher:
+        case UserRole.Auditor:
+            return <Navigate to="/documents" />;
         default:
             return <Navigate to="/login" />;
     }

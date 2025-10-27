@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { UserRole } from '../../types';
 
-// FIX: Replaced JSX.Element with React.ReactNode to resolve "Cannot find namespace 'JSX'" error.
 const NavItem: React.FC<{ to: string; icon: React.ReactNode; label: string; isOpen: boolean }> = ({ to, icon, label, isOpen }) => {
     const baseClasses = "flex items-center px-4 py-3 text-gray-200 hover:bg-[#1D4ED8] rounded-xl transition-all duration-300";
     const activeClasses = "bg-[#1E40AF]";
@@ -30,12 +29,14 @@ const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
         upload: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>,
         ai: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>,
         verify: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+        users: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.975 5.975 0 0112 13a5.975 5.975 0 013 1.803m-3-5.197a4 4 0 010-5.292" /></svg>,
     }
 
     const adminLinks = (
         <>
             <NavItem to="/admin-dashboard" icon={icons.dashboard} label="Dashboard" isOpen={isOpen} />
             <NavItem to="/documents" icon={icons.documents} label="All Documents" isOpen={isOpen} />
+            <NavItem to="/manage-users" icon={icons.users} label="Manage Users" isOpen={isOpen} />
             <NavItem to="/audit-log" icon={icons.audit} label="Audit Log" isOpen={isOpen} />
         </>
     );
@@ -58,6 +59,20 @@ const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
         </>
     );
 
+    const researcherLinks = (
+        <>
+            <NavItem to="/documents" icon={icons.documents} label="Research Data" isOpen={isOpen} />
+            <NavItem to="/ai-assistant" icon={icons.ai} label="AI Assistant" isOpen={isOpen} />
+        </>
+    );
+
+    const auditorLinks = (
+        <>
+            <NavItem to="/documents" icon={icons.documents} label="All Documents" isOpen={isOpen} />
+            <NavItem to="/audit-log" icon={icons.audit} label="Audit Log" isOpen={isOpen} />
+        </>
+    );
+
     return (
         <div className={`bg-[#2563EB] text-white flex-col p-4 transition-all duration-300 ease-in-out hidden lg:flex ${isOpen ? 'w-64' : 'w-24'}`}>
             <div className={`font-bold mb-10 px-4 transition-all duration-300 ${isOpen ? 'text-2xl' : 'text-xl text-center'}`}>
@@ -67,6 +82,8 @@ const Sidebar: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
                 {user?.role === UserRole.Admin && adminLinks}
                 {user?.role === UserRole.Doctor && doctorLinks}
                 {user?.role === UserRole.Patient && patientLinks}
+                {user?.role === UserRole.Researcher && researcherLinks}
+                {user?.role === UserRole.Auditor && auditorLinks}
             </nav>
         </div>
     );

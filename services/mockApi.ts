@@ -25,12 +25,13 @@ const initializeData = <T,>(key: string, initialData: T[]): T[] => {
     return initialData;
 };
 
-const MOCK_USERS: User[] = [
+const MOCK_USERS_INITIAL: User[] = [
   { id: '1', name: 'Dr. Alice', email: 'alice@docurex.com', role: UserRole.Doctor },
   { id: '2', name: 'Bob Patient', email: 'bob@docurex.com', role: UserRole.Patient },
   { id: '3', name: 'Charlie Admin', email: 'charlie@docurex.com', role: UserRole.Admin },
 ];
 
+let users: User[] = initializeData('docurex_users', MOCK_USERS_INITIAL);
 let documents: Document[] = initializeData('docurex_documents', []);
 let blockchain: BlockchainEntry[] = initializeData('docurex_blockchain', []);
 let auditLogs: AuditLog[] = initializeData('docurex_auditlogs', []);
@@ -41,7 +42,7 @@ const saveToLocalStorage = (key: string, data: any) => {
 
 // --- API Functions ---
 
-const createAuditLog = (user: User, action: string, details: string) => {
+const createAuditLog = (user: User | {id: string, name: string, role: UserRole}, action: string, details: string) => {
     const newLog: AuditLog = {
         id: Date.now().toString(),
         action,
@@ -58,7 +59,7 @@ const createAuditLog = (user: User, action: string, details: string) => {
 export const mockLogin = (email: string, pass: string): Promise<User | null> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const user = MOCK_USERS.find(u => u.email === email);
+      const user = users.find(u => u.email === email);
       // NOTE: In a real app, 'pass' would be checked against a hashed password.
       if (user) {
         createAuditLog(user, 'Login', `User ${user.name} logged in.`);
@@ -70,12 +71,33 @@ export const mockLogin = (email: string, pass: string): Promise<User | null> => 
   });
 };
 
+export const registerUser = (name: string, email: string, role: UserRole, creator: User): Promise<{ success: boolean, message: string }> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (users.some(u => u.email === email)) {
+                resolve({ success: false, message: 'User with this email already exists.' });
+                return;
+            }
+            const newUser: User = {
+                id: `user_${Date.now()}`,
+                name,
+                email,
+                role,
+            };
+            users.push(newUser);
+            saveToLocalStorage('docurex_users', users);
+            createAuditLog(creator, 'User Creation', `Created new user '${name}' with role ${role}.`);
+            resolve({ success: true, message: 'User created successfully.' });
+        }, 500);
+    });
+};
+
 export const getDocumentsForUser = (user: User): Promise<Document[]> => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            if(user.role === UserRole.Admin || user.role === UserRole.Doctor) {
+            if([UserRole.Admin, UserRole.Doctor, UserRole.Auditor, UserRole.Researcher].includes(user.role)) {
                 resolve([...documents]);
-            } else {
+            } else { // Patient
                 resolve(documents.filter(d => d.patientId === user.id));
             }
         }, 300);
@@ -154,8 +176,14 @@ export const verifyDocumentById = (docId: string, admin: User): Promise<boolean>
     });
 };
 
-export const getUsers = (): Promise<User[]> => {
+export const getPatients = (): Promise<User[]> => {
     return new Promise((resolve) => {
-        setTimeout(() => resolve(MOCK_USERS.filter(u => u.role === UserRole.Patient)), 300);
+        setTimeout(() => resolve(users.filter(u => u.role === UserRole.Patient)), 300);
     });
+}
+
+export const getAllUsers = (): Promise<User[]> => {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve([...users]), 300);
+    })
 }

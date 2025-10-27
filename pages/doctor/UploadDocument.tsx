@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { uploadDocument, getUsers } from '../../services/mockApi';
+import { uploadDocument, getPatients } from '../../services/mockApi';
 import { User } from '../../types';
 
 const UploadDocument: React.FC = () => {
@@ -12,7 +12,7 @@ const UploadDocument: React.FC = () => {
     const { user } = useAuth();
 
     useEffect(() => {
-        getUsers().then(setPatients);
+        getPatients().then(setPatients);
     }, []);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
